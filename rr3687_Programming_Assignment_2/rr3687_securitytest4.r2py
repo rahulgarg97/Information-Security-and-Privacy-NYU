@@ -1,0 +1,32 @@
+#Test Case- Writing with the data check
+
+if "file_test.txt" in listfiles():
+  removefile("file_test.txt")
+test_file=openfile("file_test.txt",True)  #Open a file
+
+
+# try block
+try:
+	#writing some data to the test file
+	test_file.writeat("ProperTimingcode1w232232wewd",0)
+	#setting the max. size of the test_file = 14
+	test_file.setmaxfilesize(14)
+	
+	#now, starting from the position 6, writing some new data
+	test_file.writeat("TestPaSsFaIl",6)
+	# Collecting the file data into teat_data variable
+	test_data = test_file.readat(None,0)
+	# checking wether new data is inserted correctly and extra characters are truncated or not 
+	if test_data == 'ProperTestPaSs':
+		# the reference monitor truncated the extra characters correctly
+		pass
+	# if not truncated correctly, then print the error
+	else:
+		log("The size of the file is compromised because the write function did not take care of the file size limit")
+# Except Block
+except:
+	# printing out the error
+	log('Something else went wrong with the validwrite operation. The security of the reference monitor is compromised')
+
+# Closing the test file
+test_file.close()

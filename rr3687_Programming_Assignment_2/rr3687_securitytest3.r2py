@@ -1,0 +1,36 @@
+#Test Case - Trying to read from the last position i.e. in the reverse direction
+
+# Creating a file and assigning to a variable file_test
+file_test=openfile("testfile.txt", True)
+# closing the test file
+file_test.close()
+# deleting the test file
+removefile("testfile.txt")
+
+# Creating a file and assigning to a variable file_test
+file_test=openfile("testfile.txt", True)
+ 
+# try block
+try:
+    # writing some upper and lower case letters
+    file_test.writeat("cDfgDkJ",0)
+    # Reading the test file backward into the variable
+    data_read = file_test.readat(-7,1)
+    # printing the read data
+    log(data_read)
+
+# except block
+except ValueError:
+  # do nothing
+  pass
+
+# else block
+else:
+  # If the reference monitor fails
+  # print
+  log("Good_Game _Well_Played ;)")
+
+# finally block 
+finally:
+  # Closing the test file
+  file_test.close()

@@ -1,0 +1,42 @@
+# Test Case- Trying to read past the end of the file, if it does so, then it will generate an error
+
+# New File Open Operation to Read file with byte value greater than the bytes written.
+
+# Checking if file with filename a exists
+if "testfile.txt.a" in listfiles():
+  # if so, deleting the file
+  removefile("testfile.txt.a")
+# Checking if file with filename b exists
+if "testfile.txt.b" in listfiles():
+  # if so, deleting the file
+  removefile("testfile.txt.b")
+
+# Calling the file open function..
+# Creating an AB file and assigning to a variable file_test
+file_test=ABopenfile("testfile.txt",True)
+
+# Writing the validdata to the file
+file_test.writeat("SdatatotestE",0)
+
+# Readingdata from the file
+#Total bytes written = 12
+#Trying to read 15 bytes
+#try block
+try:
+# trying to read the data having actual length shorter than what we are trying to read
+  file_test.readat(15,0)
+# except block
+except RepyArgumentError:
+# do nothing
+  pass
+# else block
+else:
+# It read past the end of the file, so we'll print
+  log("error! Invalid read allowed with actual size of file shorter than the given value in the test case!\n")
+# exit block
+finally:
+
+  exitall()
+
+#Closing the file
+file_test.close()

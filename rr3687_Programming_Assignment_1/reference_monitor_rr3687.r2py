@@ -1,0 +1,105 @@
+"""
+This security layer inadequately handles A/B storage for files in RepyV2.
+
+Note:
+    This security layer uses encasementlib.r2py, restrictions.default, repy.py and Python
+    Also you need to give it an application to run.
+    python repy.py restrictions.default encasementlib.r2py [security_layer].r2py [attack_program].r2py.
+
+References: https://github.com/akshaytambe/Security-Reference-Monitor/blob/master/Implementation/reference_monitor_apt321.r2py
+
+Submitted by: Rahul (rr3687)
+    """
+
+TYPE="type"
+ARGS="args"
+RETURN="return"
+EXCP="exceptions"
+TARGET="target"
+FUNC="func"
+OBJC="objc"
+
+class ABFile():
+    def __init__(self,filename,create):
+        # globals
+        mycontext['debug'] = False
+        # local (per object) reference to the underlying file
+        #create the lock
+        self.lock = createlock()
+        # initiating the local variables
+        self.Afn = filename+'.a'
+        self.Bfn = filename+'.b'
+
+        # make the files and add 'SE' to the readat file...
+        # Opening the A file
+        self.Afile = openfile(self.Afn,create)
+        # checking if B file is already in the list of files
+        if (self.Bfn in listfiles() == True):
+        # if so, then remove that old B file and create a new B file
+          removefile(self.Bfn)
+        # and creating the new B file
+        self.Bfile = openfile(self.Bfn, True)
+        # checking if A file is empty
+        if ((self.Afile.readat(None, 0) == "") == True):
+        # if so, the writing "SE" at position zero in the A file
+          self.Afile.writeat("SE",0)
+        # reading the data of A file in Adata variable
+        Adata = self.Afile.readat(None, 0)
+        # Pasting the data of A file into the Bfile
+        self.Bfile.writeat(Adata,0)
+
+
+    def writeat(self,data,offset):
+
+    # Write the requested data to the B file using the sandbox's writeat call
+        try:
+        # writing data into the B file
+          self.Bfile.writeat(data,offset)
+        except:
+          return
+
+    def readat(self,bytes,offset):
+        try:
+            # Read from the A file using the sandbox's readat...
+            return self.Afile.readat(bytes,offset)
+        except:
+            return
+
+    def close(self):
+        # Reading the data of B file into the variable BData
+        BData = self.Bfile.readat(None,0)
+        # Calculating the length of the data in file B and storing it in a variable called BData_Length
+        BData_Length = len(BData)
+        # Checking whether BData is empty or not
+        if ((BData_Length > 0) == True):
+            # if not, then checking whether BData ends with the letter 'E' and starts with the letter 'S'
+            if BData[-1]== 'E' and BData[0]== 'S':
+                # if so, it would be a valid write to file A, so pasting the data of file B to file A
+                self.Afile.writeat(BData,0)
+        # closing the B file
+        self.Bfile.close()
+        # closing the A file
+        self.Afile.close()
+        # deleting the B file because we are going to create it again once we start to write again
+        removefile(self.Bfn)
+
+
+def ABopenfile(filename, create):
+  return ABFile(filename,create)
+
+
+
+
+# The code here sets up type checking and variable hiding for you.  You
+# should not need to change anything below here.
+sec_file_def = {"obj-type":ABFile,
+                "name":"ABFile",
+                "writeat":{"type":"func","args":(str,(int,long)),"exceptions":Exception,"return":(int,type(None)),"target":ABFile.writeat},
+                "readat":{"type":"func","args":((int,long,type(None)),(int,long)),"exceptions":Exception,"return":str,"target":ABFile.readat},
+                "close":{"type":"func","args":None,"exceptions":None,"return":(bool,type(None)),"target":ABFile.close}
+           }
+
+CHILD_CONTEXT_DEF["ABopenfile"] = {TYPE:OBJC,ARGS:(str,bool),EXCP:Exception,RETURN:sec_file_def,TARGET:ABopenfile}
+
+# Execute the user code
+secure_dispatch_module()
